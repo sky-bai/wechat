@@ -1,0 +1,225 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /v1/mini_program:
+        post:
+            tags:
+                - MiniProgram
+            description: |-
+                ------------ internal ----------
+                 添加小程序
+            operationId: MiniProgram_AddMiniProgram
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/helloworld.v1.AddMiniProgramRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.AddMiniProgramReply'
+    /v1/official_account:
+        get:
+            tags:
+                - OfficialAccount
+            description: 获取公众号列表
+            operationId: OfficialAccount_GetOfficialAccountList
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.GetOfficialAccountListReply'
+        put:
+            tags:
+                - OfficialAccount
+            description: 修改公众号
+            operationId: OfficialAccount_UpdateOfficialAccount
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/helloworld.v1.UpdateOfficialAccountRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.UpdateOfficialAccountReply'
+        post:
+            tags:
+                - OfficialAccount
+            description: |-
+                ------------ internal ----------
+                 添加公众号
+            operationId: OfficialAccount_AddOfficialAccount
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/helloworld.v1.AddOfficialAccountRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.AddOfficialAccountReply'
+        delete:
+            tags:
+                - OfficialAccount
+            description: 删除公众号
+            operationId: OfficialAccount_DeleteOfficialAccount
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.DeleteOfficialAccountReply'
+    /v1/wx/openid:
+        get:
+            tags:
+                - MiniProgram
+            description: |-
+                -------------- wx --------------
+                 通过code获取openid
+            operationId: MiniProgram_GetOpenidByCode
+            parameters:
+                - name: customer
+                  in: query
+                  schema:
+                    type: string
+                - name: appId
+                  in: query
+                  schema:
+                    type: string
+                - name: code
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.GetOpenidByCodeReply'
+    /wx/new:
+        get:
+            tags:
+                - OfficialAccount
+            description: 微信回调
+            operationId: OfficialAccount_WxCallback
+            parameters:
+                - name: signature
+                  in: query
+                  schema:
+                    type: string
+                - name: timestamp
+                  in: query
+                  schema:
+                    type: string
+                - name: nonce
+                  in: query
+                  schema:
+                    type: string
+                - name: echostr
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.WxCallbackReply'
+components:
+    schemas:
+        helloworld.v1.AddMiniProgramReply:
+            type: object
+            properties: {}
+        helloworld.v1.AddMiniProgramRequest:
+            type: object
+            properties: {}
+            description: AddMiniProgram 方法 添加小程序
+        helloworld.v1.AddOfficialAccountReply:
+            type: object
+            properties:
+                name:
+                    type: string
+                Id:
+                    type: integer
+                    format: int64
+        helloworld.v1.AddOfficialAccountRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                appId:
+                    type: string
+                appSecret:
+                    type: string
+                token:
+                    type: string
+                encodingAesKey:
+                    type: string
+                tokenUrl:
+                    type: string
+                appIdAlias:
+                    type: string
+            description: AddOfficialAccount 方法 添加公众号
+        helloworld.v1.DeleteOfficialAccountReply:
+            type: object
+            properties: {}
+        helloworld.v1.GetOfficialAccountListReply:
+            type: object
+            properties: {}
+        helloworld.v1.GetOpenidByCodeReply:
+            type: object
+            properties:
+                ret:
+                    type: integer
+                    format: int32
+                msg:
+                    type: string
+                data:
+                    $ref: '#/components/schemas/helloworld.v1.GetOpenidByCodeReply_Data'
+        helloworld.v1.GetOpenidByCodeReply_Data:
+            type: object
+            properties:
+                openid:
+                    type: string
+                mobile:
+                    type: string
+        helloworld.v1.UpdateOfficialAccountReply:
+            type: object
+            properties: {}
+        helloworld.v1.UpdateOfficialAccountRequest:
+            type: object
+            properties: {}
+            description: UpdateOfficialAccount 方法 修改公众号
+        helloworld.v1.WxCallbackReply:
+            type: object
+            properties:
+                echostr:
+                    type: string
+tags:
+    - name: MiniProgram
+      description: '-------------- 小程序 --------------'
+    - name: OfficialAccount
+      description: '-------------- 公众号 --------------'
