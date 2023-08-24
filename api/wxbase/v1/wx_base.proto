@@ -18,6 +18,8 @@ service OfficialAccount {
 
 
 
+
+
   // ------------ internal ----------
   // 添加公众号
   rpc AddOfficialAccount (AddOfficialAccountRequest) returns (AddOfficialAccountReply) {
@@ -47,6 +49,11 @@ service OfficialAccount {
   }
 
 }
+
+message ReceiveWxMessageRequest {
+  string xml_data = 1;
+}
+message  ReceiveWxMessageReply {}
 
 message  WxCallbackRequest {
   string signature = 1;

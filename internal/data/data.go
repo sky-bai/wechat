@@ -3,6 +3,7 @@ package data
 import (
 	"wx-base/internal/conf"
 	"wx-base/pkg/miniprogram/auth"
+	"wx-base/pkg/officialaccount"
 	"wx-base/pkg/officialaccount/oauth"
 	"wx-base/pkg/officialaccount/wx_context"
 
@@ -18,9 +19,10 @@ var ProviderSet = wire.NewSet(NewOauth, NewData, NewDB, NewMiniProgramRepo, NewO
 // Data .
 type Data struct {
 	// TODO wrapped database client
-	oauth       *oauth.Oauth
-	db          *gorm.DB
-	miniProgram *auth.Auth
+	oauth           *oauth.Oauth
+	db              *gorm.DB
+	miniProgram     *auth.Auth
+	officialAccount *officialaccount.OfficialAccount
 }
 
 // NewData .

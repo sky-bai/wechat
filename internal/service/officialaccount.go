@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/go-kratos/kratos/v2/log"
 	v1 "wx-base/api/wxbase/v1"
 	"wx-base/internal/biz"
 	"wx-base/pkg/util"
@@ -53,7 +54,6 @@ func (r *OfficialAccountService) CreateOfficialAccount(ctx context.Context, in *
 
 // WxCallback 微信回调
 func (r *OfficialAccountService) WxCallback(ctx context.Context, in *v1.WxCallbackRequest) (*v1.WxCallbackReply, error) {
-	fmt.Println("---", in.Signature)
 	var info util.SignatureOptions
 	info.Signature = in.Signature
 	info.TimeStamp = in.Timestamp
@@ -61,6 +61,7 @@ func (r *OfficialAccountService) WxCallback(ctx context.Context, in *v1.WxCallba
 	info.EchoStr = in.Echostr
 
 	if !util.Validate(info) {
+		log.Errorf("签名验证失败")
 		return nil, fmt.Errorf("签名验证失败")
 	}
 

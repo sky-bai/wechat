@@ -1,6 +1,7 @@
 package credential
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +12,7 @@ import (
 func TestGetTicketFromServer(t *testing.T) {
 	defer gock.Off()
 	gock.New(getTicketURL).Reply(200).JSON(&ResTicket{Ticket: "mock-ticket", ExpiresIn: 10})
-	ticket, err := GetTicketFromServer("arg-ak")
+	ticket, err := GetTicketFromServer(context.Background(), "arg-ak")
 	assert.Nil(t, err)
 	assert.Equal(t, int64(0), ticket.ErrCode)
 	assert.Equal(t, "mock-ticket", ticket.Ticket, "they should be equal")
