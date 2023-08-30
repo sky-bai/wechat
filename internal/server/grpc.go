@@ -1,9 +1,11 @@
 package server
 
 import (
-	v1 "wx-base/api/wxbase/v1"
+	"cdgitlib.spreadwin.cn/core/common/pb/pbWxBase"
+	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"wx-base/internal/conf"
-	"wx-base/internal/service"
+	"wx-base/internal/service/mini_program_service"
+	"wx-base/internal/service/official_account_service"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -11,10 +13,11 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, oa *service.OfficialAccountService, mini *service.MiniProgramService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, oa *official_account_service.OfficialAccountService, mini *mini_program_service.MiniProgramService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
+			validate.Validator(),
 		),
 	}
 	if c.Grpc.Network != "" {
@@ -27,8 +30,7 @@ func NewGRPCServer(c *conf.Server, oa *service.OfficialAccountService, mini *ser
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	v1.RegisterMiniProgramServer(srv, mini)
-	v1.RegisterOfficialAccountServer(srv, oa)
-	//v1.RegisterWxBaseServer(srv, greeter)
+	pbWxBase.RegisterMiniProgramServer(srv, mini)
+	pbWxBase.RegisterOfficialAccountServer(srv, oa)
 	return srv
 }

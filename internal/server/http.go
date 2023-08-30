@@ -1,11 +1,15 @@
 package server
 
 import (
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
-	"github.com/go-kratos/kratos/v2/middleware/selector"
-	v1 "wx-base/api/wxbase/v1"
+	"cdgitlib.spreadwin.cn/core/common/pb/pbWxBase"
+	"fmt"
+	"github.com/go-kratos/kratos/v2/middleware/validate"
+	nethttp "net/http"
+	"strings"
 	"wx-base/internal/conf"
-	"wx-base/internal/service"
+	"wx-base/internal/data"
+	"wx-base/internal/service/mini_program_service"
+	"wx-base/internal/service/official_account_service"
 	"wx-base/pkg/midderware"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -14,10 +18,12 @@ import (
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, oa *service.OfficialAccountService, mini *service.MiniProgramService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, data *data.Data, oa *official_account_service.OfficialAccountService, mini *mini_program_service.MiniProgramService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
+		http.ResponseEncoder(CustomerResponseEncoder),
 		http.Middleware(
-			midderware.WxAuth(),
+			validate.Validator(),
+			midderware.WxAuth(data),
 			//	selector.Server(
 			//	// 这里面填具体的中间件处理逻辑
 			//	).Match(
@@ -25,10 +31,12 @@ func NewHTTPServer(c *conf.Server, oa *service.OfficialAccountService, mini *ser
 			//		NewWhiteListMatcher()).
 			//		Build(),
 			//),
-			selector.Server(recovery.Recovery(), midderware.WxAuth()).
-				Path("/wx/new/new").
-				//Prefix("/wx/new/new").
-				Build(),
+			//selector.Server(recovery.Recovery(), midderware.WxAuth()).
+			//	Path("/wx/new/new").
+			//	//Prefix("/wx/new/new").
+			//	Build(),
+			// 基于分支创建新的proto文件，submodule 切换分支生成stub代码， 同理client使用连调切换同一个分支
+			// 维护makefile 使用protoc + go build 统一处理
 		),
 	}
 	if c.Http.Network != "" {
@@ -45,19 +53,66 @@ func NewHTTPServer(c *conf.Server, oa *service.OfficialAccountService, mini *ser
 	openAPIHandler := openapiv2.NewHandler()
 	srv.HandlePrefix("/q/", openAPIHandler)
 
-	// 微信发过来的消息
-	srv.HandleFunc("/wx/new", service.WxBase())
-
-	// 单独起的http服务好像没加入中间件昵
-
 	//v1.RegisterWxBaseHTTPServer()
 
-	v1.RegisterOfficialAccountHTTPServer(srv, oa)
-	v1.RegisterMiniProgramHTTPServer(srv, mini)
+	pbWxBase.RegisterOfficialAccountHTTPServer(srv, oa)
+	pbWxBase.RegisterMiniProgramHTTPServer(srv, mini)
 	return srv
 }
 
-//
+func CustomerResponseEncoder(w http.ResponseWriter, r *http.Request, v interface{}) error {
+	fmt.Println("r.URL.Path:", r.URL.Path)
+	if v == nil {
+		return nil
+	}
+
+	if rd, ok := v.(http.Redirector); ok {
+		url, code := rd.Redirect()
+		nethttp.Redirect(w, r, url, code)
+		return nil
+	}
+
+	if r.URL.Path == "/wx/new/test" && r.Method == "GET" {
+		writeContextType(w, plainContentType)
+		data := v.(*pbWxBase.WxCallbackReply)
+		_, err := w.Write([]byte(data.Echostr))
+		if err != nil {
+			return err
+		}
+	} else {
+		codec, _ := http.CodecForRequest(r, "Accept")
+		data, err := codec.Marshal(v)
+		if err != nil {
+			return err
+		}
+		w.Header().Set("Content-Type", ContentType(codec.Name()))
+		_, err = w.Write(data)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+const (
+	baseContentType = "application"
+)
+
+// ContentType returns the content-type with base prefix.
+func ContentType(subtype string) string {
+	return strings.Join([]string{baseContentType, subtype}, "/")
+}
+
+var plainContentType = []string{"text/plain; charset=utf-8"}
+
+func writeContextType(w http.ResponseWriter, value []string) {
+	header := w.Header()
+	if val := header["Content-Type"]; len(val) == 0 {
+		header["Content-Type"] = value
+	}
+}
+
 //func NewWhiteListMatcher() selector.MatchFunc {
 //
 //	whiteList := make(map[string]struct{})

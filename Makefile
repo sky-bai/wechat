@@ -47,7 +47,8 @@ api:
 .PHONY: build
 # build
 build:
-	mkdir -p bin/ && go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/ ./...
+	mkdir -p bin/ && GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/ ./...
+	scp ./bin/wx-base ndev:/db/project_code/wx_base
 
 .PHONY: generate
 # generate
@@ -55,6 +56,10 @@ generate:
 	go mod tidy
 	go get github.com/google/wire/cmd/wire@latest
 	go generate ./...
+
+.PHONY: scp
+scp:
+	scp ./bin/wx-base ndev:/db/project_code/wx_base
 
 .PHONY: all
 # generate all

@@ -4,6 +4,7 @@ import (
 	context2 "context"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/net/context"
 	"wx-base/pkg/officialaccount/wx_context"
 	"wx-base/pkg/util"
 )
@@ -44,9 +45,9 @@ type RspCheckEncryptedData struct {
 }
 
 // Code2SessionContext 登录凭证校验。
-func (auth *Auth) Code2SessionContext(ctx context2.Context, jsCode string) (result ResCode2Session, err error) {
+func (auth *Auth) Code2SessionContext(ctx context2.Context, appID, appSecret, jsCode string) (result ResCode2Session, err error) {
 	var response []byte
-	if response, err = util.HTTPGetContext(ctx, fmt.Sprintf(code2SessionURL, auth.AppID, auth.AppSecret, jsCode)); err != nil {
+	if response, err = util.HTTPGetContext(ctx, fmt.Sprintf(code2SessionURL, appID, appSecret, jsCode)); err != nil {
 		return
 	}
 	if err = json.Unmarshal(response, &result); err != nil {
@@ -103,15 +104,12 @@ type PhoneInfo struct {
 }
 
 // GetPhoneNumberContext 小程序通过code获取用户手机号
-func (auth *Auth) GetPhoneNumberContext(ctx context2.Context, code string) (*GetPhoneNumberResponse, error) {
+func (auth *Auth) GetPhoneNumberContext(ctx context.Context, accessToken, code string) (*GetPhoneNumberResponse, error) {
 	var response []byte
 	var (
-		at  string
 		err error
 	)
-	if at, err = auth.GetAccessToken(); err != nil {
-		return nil, err
-	}
+
 	body := map[string]interface{}{
 		"code": code,
 	}
@@ -122,7 +120,7 @@ func (auth *Auth) GetPhoneNumberContext(ctx context2.Context, code string) (*Get
 	}
 
 	header := map[string]string{"Content-Type": "application/json;charset=utf-8"}
-	if response, err = util.HTTPPostContext(ctx, fmt.Sprintf(getPhoneNumber, at), bodyBytes, header); err != nil {
+	if response, err = util.HTTPPostContext(ctx, fmt.Sprintf(getPhoneNumber, accessToken), bodyBytes, header); err != nil {
 		return nil, err
 	}
 

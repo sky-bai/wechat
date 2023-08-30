@@ -9,11 +9,15 @@ package main
 import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
-	"wx-base/internal/biz"
+	"wx-base/internal/biz/mini_program_biz"
+	"wx-base/internal/biz/official_account_biz"
 	"wx-base/internal/conf"
 	"wx-base/internal/data"
+	"wx-base/internal/data/mini_program_data"
+	"wx-base/internal/data/offiaiacl_account_data"
 	"wx-base/internal/server"
-	"wx-base/internal/service"
+	"wx-base/internal/service/mini_program_service"
+	"wx-base/internal/service/official_account_service"
 )
 
 import (
@@ -24,18 +28,20 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
+	db := data.NewGormDB(confData, logger)
+	client := data.NewRedisCmd(confData, logger)
+	dataData, cleanup, err := data.NewData(db, client, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	officialAccountRepo := data.NewOfficialAccountRepo(dataData, logger)
-	officialAccountUseCase := biz.NewOfficialAccountUseCase(officialAccountRepo, logger)
-	officialAccountService := service.NewOfficialAccountService(officialAccountUseCase)
-	miniProgramRepo := data.NewMiniProgramRepo(dataData, logger)
-	miniProgramUseCase := biz.NewMiniProgramUseCase(miniProgramRepo, logger)
-	miniProgramService := service.NewMiniProgramService(miniProgramUseCase)
+	officialAccountRepo := offiaiacl_account_data.NewOfficialAccountRepo(dataData, logger)
+	officialAccountUseCase := official_account_biz.NewOfficialAccountUseCase(officialAccountRepo, logger)
+	officialAccountService := official_account_service.NewOfficialAccountService(officialAccountUseCase, logger)
+	miniProgramRepo := mini_program_data.NewMiniProgramRepo(dataData, logger)
+	miniProgramUseCase := mini_program_biz.NewMiniProgramUseCase(miniProgramRepo, logger)
+	miniProgramService := mini_program_service.NewMiniProgramService(miniProgramUseCase)
 	grpcServer := server.NewGRPCServer(confServer, officialAccountService, miniProgramService, logger)
-	httpServer := server.NewHTTPServer(confServer, officialAccountService, miniProgramService, logger)
+	httpServer := server.NewHTTPServer(confServer, dataData, officialAccountService, miniProgramService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

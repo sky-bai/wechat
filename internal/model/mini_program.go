@@ -20,11 +20,12 @@ type MiniProgram struct {
 	AppSecret       string         `gorm:"column:app_secret;type:varchar(255)" json:"app_secret"`
 	JsToken         string         `gorm:"column:js_token;type:varchar(255)" json:"js_token"`
 	Token           string         `gorm:"column:token;type:varchar(255)" json:"token"`
-	TokenUpdateTime time.Time      `gorm:"column:token_update_time;type:datetime(3)" json:"token_update_time"`
+	TokenUpdateTime *time.Time     `gorm:"column:token_update_time;type:datetime(3)" json:"token_update_time"`
 	URL             string         `gorm:"column:url;type:varchar(255)" json:"url"`
 	ServerToken     string         `gorm:"column:server_token;type:varchar(255)" json:"server_token"`
-	ServerAesKey    string         `gorm:"column:server_aes_key;type:varchar(255)" json:"server_aes_key"`
-	AppIDAlias      string         `gorm:"column:app_Id_alias;type:varchar(255);comment:appId的别名" json:"app_Id_alias"` // appId的别
+	EncodingAesKey  string         `gorm:"column:encoding_aes_key;type:varchar(255)" json:"encoding_aes_key"`
+	AppIDAlias      string         `gorm:"column:app_Id_alias;type:varchar(255);comment:appId的别名" json:"app_Id_alias"` // appId的别名
+	WxUsers         []*WxUser
 }
 
 // TableName MiniProgram's table name
